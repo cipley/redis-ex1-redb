@@ -1,0 +1,1 @@
+rootProject.name = "redis-ex1-redb"

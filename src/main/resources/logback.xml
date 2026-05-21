@@ -1,0 +1,20 @@
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{20} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="UI" class="com.example.logging.UiLogAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss} %-5level - %msg</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="UI" />
+    </root>
+
+    <logger name="io.lettuce" level="INFO" />
+    <logger name="io.netty"   level="WARN" />
+</configuration>
