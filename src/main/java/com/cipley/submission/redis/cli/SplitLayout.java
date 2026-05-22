@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SplitLayout {
-    private static final int LOG_ROWS = 6;
+    private static final int LOG_ROWS = 15;
     private static final String DIVIDER_CHAR = "-";
 
     private final Terminal terminal;
@@ -52,6 +52,8 @@ public class SplitLayout {
 
         // Clear screen before every render to prevent lines bleeding over
         clear();
+        display.resize(totalRows, width);
+        display.reset(); // force full redraw, no diffing against stale state
 
         List<AttributedString> rows = new ArrayList<>();
 
@@ -85,6 +87,10 @@ public class SplitLayout {
         int promptRow = mainLines.size() + 1; // +1 for the blank padding
         terminal.writer().print(String.format("\033[%d;1H", promptRow));
         terminal.writer().flush();
+    }
+
+    public int getWidth() {
+        return Math.max(1, terminal.getWidth());
     }
 
     private void drainNewLogs() {

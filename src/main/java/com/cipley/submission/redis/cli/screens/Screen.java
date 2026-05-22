@@ -19,4 +19,8 @@ public interface Screen {
     default boolean usesLayout() {
         return true;
     }
+
+    default boolean isExit() {
+        return false;
+    }
 }

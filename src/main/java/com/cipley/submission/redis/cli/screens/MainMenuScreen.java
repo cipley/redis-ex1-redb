@@ -1,7 +1,6 @@
 package com.cipley.submission.redis.cli.screens;
 
 import com.cipley.submission.redis.cli.SplitLayout;
-import com.cipley.submission.redis.config.ApplicationConfig;
 import com.cipley.submission.redis.config.RedisConfig;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
@@ -20,6 +19,7 @@ public class MainMenuScreen implements Screen {
     private final StatefulRedisConnection<String, String> connection;
     private final RedisCommands<String, String> commands;
     private String statusMessage = "";
+    private boolean exiting = false;
 
     public MainMenuScreen(RedisConfig redisConfig, StatefulRedisConnection<String, String> connection) {
         this.redisConfig = redisConfig;
@@ -52,11 +52,12 @@ public class MainMenuScreen implements Screen {
         switch (input.trim()) {
             case "1" -> {
                 logger.info("User selected option 1");
-                statusMessage = "Option 1 selected — (placeholder)";
+                statusMessage = "Option 1 selected — Redis Database operations";
+                return new REDBScreen(commands);
             }
             case "2" -> {
                 logger.info("User selected option 2");
-                statusMessage = "Option 2 selected — (placeholder)";
+                statusMessage = "Option 2 selected — Redis REST APIs";
             }
             case "3" -> {
                 logger.info("User selected option 3");
@@ -65,6 +66,7 @@ public class MainMenuScreen implements Screen {
             case "0", "exit", "quit" -> {
                 connection.close();
                 redisConfig.shutdown();
+                exiting = true;
                 logger.info("User exited from main menu");
                 return null; // signals shell to exit
             }
@@ -79,6 +81,11 @@ public class MainMenuScreen implements Screen {
     @Override
     public String prompt() {
         return "choice: ";
+    }
+
+    @Override
+    public boolean isExit() {
+        return exiting;
     }
 
     // --- Styling helpers ---

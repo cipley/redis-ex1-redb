@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public class ConsoleShell {
     private static final Logger logger = LoggerFactory.getLogger(ConsoleShell.class);
@@ -20,6 +22,7 @@ public class ConsoleShell {
     private final Terminal terminal;
     private final LineReader reader;
     private final SplitLayout layout;
+    private final Deque<Screen> screenStack = new ArrayDeque<>();
     private Screen currentScreen;
 
     public ConsoleShell(ApplicationConfig applicationConfig) throws IOException {
@@ -50,7 +53,18 @@ public class ConsoleShell {
             try {
                 String line = reader.readLine(currentScreen.prompt());
                 if (line == null) line = "";
-                currentScreen = currentScreen.handleInput(line, layout);
+                var next = currentScreen.handleInput(line, layout);
+
+                if (next == null && !currentScreen.isExit() && !screenStack.isEmpty()) {
+                    // null = go back
+                    currentScreen = screenStack.pop();
+                } else if (next == null) {
+                    // Exit
+                    currentScreen = null;
+                } else if (next != currentScreen) {
+                    screenStack.push(currentScreen);
+                    currentScreen = next;
+                }
 
             } catch (UserInterruptException e) {
                 // Ctrl+C — redraw
