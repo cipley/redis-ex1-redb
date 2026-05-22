@@ -31,12 +31,13 @@ public class MainMenuScreen implements Screen {
     @Override
     public void render(SplitLayout layout) {
         var lines = new ArrayList<AttributedString>();
+        lines.add(blank());
         lines.add(title("  Redis - Consultant Engineer Exercise — Main Menu"));
         lines.add(blank());
         lines.add(blank());
-        lines.add(option("  [1]  Option one (placeholder)"));
-        lines.add(option("  [2]  Option two (placeholder)"));
-        lines.add(option("  [3]  Option three (placeholder)"));
+        lines.add(option("  [1]  Redis Database operations"));
+        lines.add(option("  [2]  Redis REST APIs"));
+        lines.add(option("  [3]  Semantic Router"));
         lines.add(blank());
         lines.add(option("  [0]  Exit"));
         lines.add(blank());
@@ -75,7 +76,8 @@ public class MainMenuScreen implements Screen {
         return this;
     }
 
-    public String currentPrompt() {
+    @Override
+    public String prompt() {
         return "choice: ";
     }
 
@@ -93,13 +95,6 @@ public class MainMenuScreen implements Screen {
                 .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.GREEN))
                 .append(text)
                 .style(AttributedStyle.DEFAULT)
-                .toAttributedString();
-    }
-
-    private AttributedString info(String text) {
-        return new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.WHITE))
-                .append(text)
                 .toAttributedString();
     }
 

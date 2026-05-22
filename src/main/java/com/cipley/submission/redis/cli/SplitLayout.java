@@ -32,11 +32,26 @@ public class SplitLayout {
         this.mainLines = lines;
     }
 
+    /** Print directly to terminal, bypassing the layout. Used by simple prompt screens. */
+    public void printDirect(String text) {
+        terminal.writer().print(text);
+        terminal.writer().flush();
+    }
+
+    /** Clear the entire screen. */
+    public void clear() {
+        terminal.puts(org.jline.utils.InfoCmp.Capability.clear_screen);
+        terminal.writer().flush();
+    }
+
     /** Full redraw — call this after every user interaction. */
     public void render() {
-        int totalRows = terminal.getRows();
-        int mainRows  = totalRows - LOG_ROWS - 1; // -1 for the divider
-        int width     = terminal.getColumns();
+        int totalRows = terminal.getHeight();
+        int mainRows  = Math.max(1, totalRows - LOG_ROWS - 1); // -1 for the divider
+        int width     = Math.max(1, terminal.getWidth());
+
+        // Clear screen before every render to prevent lines bleeding over
+        clear();
 
         List<AttributedString> rows = new ArrayList<>();
 
@@ -65,6 +80,11 @@ public class SplitLayout {
 
         display.resize(totalRows, width);
         display.update(rows, 0);
+
+        // Move cursor to just after the main content, before the divider
+        int promptRow = mainLines.size() + 1; // +1 for the blank padding
+        terminal.writer().print(String.format("\033[%d;1H", promptRow));
+        terminal.writer().flush();
     }
 
     private void drainNewLogs() {

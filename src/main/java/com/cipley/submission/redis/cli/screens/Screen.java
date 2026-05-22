@@ -8,4 +8,15 @@ public interface Screen {
 
     /** Handle a line of user input. Returns the next screen, or null to exit. */
     Screen handleInput(String input, SplitLayout layout);
+
+    /** The prompt string shown to the user on the input line. */
+    String prompt();
+
+    /**
+     * Whether this screen wants the full split layout rendered.
+     * Return false to print content directly without the layout (e.g. simple prompts).
+     */
+    default boolean usesLayout() {
+        return true;
+    }
 }

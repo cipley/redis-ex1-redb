@@ -1,5 +1,6 @@
 package com.cipley.submission.redis.logging;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
@@ -31,6 +32,12 @@ public class UILogAppender extends AppenderBase<ILoggingEvent> {
         var line = encoder != null
                 ? new String(encoder.encode(event)).trim()
                 : event.getFormattedMessage();
+
+        // WARN and ERROR always go to stderr so they're never swallowed by the UI buffer
+        if (event.getLevel().isGreaterOrEqual(Level.WARN)) {
+            System.err.println(line);
+            System.err.flush();
+        }
         // Drop oldest if full
         if (!BUFFER.offer(line)) {
             BUFFER.poll();

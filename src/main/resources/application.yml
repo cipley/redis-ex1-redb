@@ -1,5 +1,5 @@
 redis:
-  host: redis-12018.re-cluster1.ps-redislabs.org
-  port: 12018
+  host: localhost
+  port: 6379
   password: ""
   timeout: 5000

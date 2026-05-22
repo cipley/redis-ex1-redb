@@ -18,8 +18,7 @@ public class ConnectionScreen implements Screen {
 
     private String host;
     private Integer port;
-    private String prompt = "Enter Redis host (default: %s): ";
-    private boolean awaitingPort = false;
+    private boolean isAwaitingPort = false;
     private String statusMessage = "";
 
     public ConnectionScreen(ApplicationConfig applicationConfig) {
@@ -30,6 +29,20 @@ public class ConnectionScreen implements Screen {
 
     @Override
     public void render(SplitLayout layout) {
+        if(!isAwaitingPort) {
+            //Print Directly
+            layout.printDirect("\n  Redis - Consultant Engineer Exercise — Connection Setup\n\n");
+            layout.printDirect("  Default host : " + applicationConfig.getRedisHost() + "\n");
+            layout.printDirect("  Default port : " + applicationConfig.getRedisPort() + "\n\n");
+            layout.printDirect("  Current host : " + host +  "\n");
+            layout.printDirect("  Current port : " + port + "\n\n");
+            layout.printDirect("\n  Press ENTER to accept the default value.\n\n");
+            if (!statusMessage.isBlank()) {
+                layout.printDirect("  " + statusMessage + "\n\n");
+            }
+            return;
+        }
+
         var lines = new ArrayList<AttributedString>();
         lines.add(title("  Redis - Consultant Engineer Exercise — Connection Setup"));
         lines.add(blank());
@@ -48,13 +61,13 @@ public class ConnectionScreen implements Screen {
 
     @Override
     public Screen handleInput(String input, SplitLayout layout) {
-        if (!awaitingPort) {
+        if (!isAwaitingPort) {
             // Handling host input
             if (!input.isBlank()) {
                 host = input.trim();
             }
             logger.info("Host set to: {}", host);
-            awaitingPort = true;
+            isAwaitingPort = true;
             return this;    // Stay on this screen
         } else {
             // Handling port input
@@ -71,7 +84,22 @@ public class ConnectionScreen implements Screen {
         }
     }
 
+    @Override
+    public String prompt() {
+        if (!isAwaitingPort) {
+            return String.format("host [%s]: ", applicationConfig.getRedisHost());
+        } else  {
+            return String.format("port [%s]: ", applicationConfig.getRedisPort());
+        }
+    }
+
+    @Override
+    public boolean usesLayout() {
+        return isAwaitingPort;
+    }
+
     private Screen tryConnect() {
+        logger.info("Attempting to connect to Redis at {}:{}", host, port);
         var redisConfig = new RedisConfig(applicationConfig, host, port);
 
         try {
@@ -82,17 +110,9 @@ public class ConnectionScreen implements Screen {
         } catch (Exception e) {
             logger.error("Failed to connect to {}:{} — {}", host, port, e.getMessage());
             redisConfig.shutdown();
-            awaitingPort = false;
+            isAwaitingPort = false;
             statusMessage = "Connection failed: " + e.getMessage() + " — please try again.";
             return this;
-        }
-    }
-
-    public String currentPrompt() {
-        if (!awaitingPort) {
-            return String.format("host [%s]: ", applicationConfig.getRedisHost());
-        } else  {
-            return String.format("port [%s]: ", applicationConfig.getRedisPort());
         }
     }
 
