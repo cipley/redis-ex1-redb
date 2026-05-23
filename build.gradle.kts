@@ -1,6 +1,9 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     java
     application
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "com.cipley.submission.redis"
@@ -92,6 +95,15 @@ tasks.register("runDev") {
             .inheritIO()
             .start()
             .waitFor()
+    }
+}
+
+tasks.named<ShadowJar>("shadowJar") {
+    archiveBaseName.set("redis-ex1-redb")
+    archiveClassifier.set("")
+    archiveVersion.set("")
+    manifest {
+        attributes["Main-Class"] = "com.example.App"
     }
 }
 
