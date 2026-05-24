@@ -108,6 +108,60 @@ tasks.named<ShadowJar>("shadowJar") {
     }
 }
 
+tasks.register<Exec>("jlinkRuntime") {
+    dependsOn("shadowJar")
+
+    val javaHome = System.getProperty("java.home")
+    val outputDir = layout.buildDirectory.dir("runtime").get().asFile
+
+    commandLine(
+        "$javaHome/bin/jlink",
+        "--module-path", "$javaHome/jmods",
+        "--add-modules", "java.base,java.logging,java.xml,java.naming,java.net.http",
+        "--output", outputDir.absolutePath,
+        "--strip-debug",
+        "--compress=2",
+        "--no-header-files",
+        "--no-man-pages"
+    )
+}
+
+tasks.register("distPortable") {
+    dependsOn("jlinkRuntime", "shadowJar")
+    doLast {
+        val distDir = layout.buildDirectory.dir("portable").get().asFile
+        val runtimeDir = layout.buildDirectory.dir("runtime").get().asFile
+        val jar = layout.buildDirectory.file("libs/redis-ex1-redb.jar").get().asFile
+
+        distDir.deleteRecursively()
+        distDir.mkdirs()
+
+        // Copy bundled JRE
+        runtimeDir.copyRecursively(File(distDir, "runtime"))
+
+        // Copy fat jar
+        jar.copyTo(File(distDir, "redis-ex1-redb.jar"))
+
+        // Create launcher script (Linux/macOS)
+        val launcher = File(distDir, "run.sh")
+        launcher.writeText("""
+            #!/bin/sh
+            DIR=${'$'}(cd "${'$'}(dirname "${'$'}0")" && pwd)
+            "${'$'}DIR/runtime/bin/java" -jar "${'$'}DIR/redis-ex1-redb.jar"
+        """.trimIndent())
+        launcher.setExecutable(true)
+
+        // Create launcher script (Windows)
+        File(distDir, "run.bat").writeText("""
+            @echo off
+            set DIR=%~dp0
+            "%DIR%runtime\bin\java" -jar "%DIR%redis-ex1-redb.jar"
+        """.trimIndent())
+
+        println("Portable distribution created at: ${distDir.absolutePath}")
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
 }
