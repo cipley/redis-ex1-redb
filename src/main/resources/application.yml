@@ -3,3 +3,9 @@ redis:
   port: 6379
   password: ""
   timeout: 5000
+
+rest-api:
+  host: https://re-cluster1.ps-redislabs.org
+  port: 9443
+  username: admin@rl.org
+  password: FEwNu3a

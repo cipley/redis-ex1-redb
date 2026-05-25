@@ -36,6 +36,8 @@ dependencies {
     implementation("org.jline:jline-terminal-jansi:3.30.13")
     implementation("org.fusesource.jansi:jansi:2.4.3")
 
+    implementation("tools.jackson.core:jackson-databind:3.1.3")
+
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
