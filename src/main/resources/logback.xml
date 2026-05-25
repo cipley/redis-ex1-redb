@@ -11,4 +11,5 @@
 
     <logger name="io.lettuce" level="DEBUG" />
     <logger name="io.netty" level="WARN" />
+    <logger name="java.net" level="DEBUG" />
 </configuration>

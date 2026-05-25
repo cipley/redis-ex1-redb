@@ -46,9 +46,7 @@ public class ConsoleShell {
 
         while (currentScreen != null) {
             currentScreen.render(layout);
-            if (currentScreen.usesLayout()) {
-                layout.render();
-            }
+            layout.render();
 
             try {
                 String line = reader.readLine(currentScreen.prompt());

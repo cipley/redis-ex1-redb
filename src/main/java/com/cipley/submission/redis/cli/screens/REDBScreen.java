@@ -4,18 +4,15 @@ import com.cipley.submission.redis.cli.SplitLayout;
 import io.lettuce.core.KeyValue;
 import io.lettuce.core.api.sync.RedisCommands;
 import org.jline.utils.AttributedString;
-import org.jline.utils.AttributedStringBuilder;
-import org.jline.utils.AttributedStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class REDBScreen implements Screen {
+public class REDBScreen extends BaseScreen implements Screen {
     private static final Logger logger = LoggerFactory.getLogger(REDBScreen.class);
 
     private final RedisCommands<String, String> commands;
@@ -28,7 +25,6 @@ public class REDBScreen implements Screen {
     @Override
     public void render(SplitLayout layout) {
         var lines = new ArrayList<AttributedString>();
-        lines.add(blank());
         lines.add(title("  Redis Exercise - 1) Redis Database"));
         lines.add(blank());
         lines.add(blank());
@@ -127,44 +123,5 @@ public class REDBScreen implements Screen {
         }  catch (Exception e) {
             return "Failed to clear Redis!";
         }
-    }
-
-    // --- Styling helpers ---
-    private AttributedString title(String text) {
-        return new AttributedStringBuilder()
-                .style(AttributedStyle.BOLD.foreground(AttributedStyle.CYAN))
-                .append(text)
-                .style(AttributedStyle.DEFAULT)
-                .toAttributedString();
-    }
-
-    private AttributedString option(String text) {
-        return new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.GREEN))
-                .append(text)
-                .style(AttributedStyle.DEFAULT)
-                .toAttributedString();
-    }
-
-    private AttributedString status(String text) {
-        return new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW))
-                .append(text)
-                .style(AttributedStyle.DEFAULT)
-                .toAttributedString();
-    }
-
-    private List<AttributedString> wrap(String text, int maxWidth) {
-        List<AttributedString> result = new ArrayList<>();
-        while (text.length() > maxWidth) {
-            result.add(status("  " + text.substring(0, maxWidth)));
-            text = text.substring(maxWidth);
-        }
-        if (!text.isBlank()) result.add(status("  " + text));
-        return result;
-    }
-
-    private AttributedString blank() {
-        return new AttributedString("");
     }
 }

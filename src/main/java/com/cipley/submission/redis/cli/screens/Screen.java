@@ -12,14 +12,6 @@ public interface Screen {
     /** The prompt string shown to the user on the input line. */
     String prompt();
 
-    /**
-     * Whether this screen wants the full split layout rendered.
-     * Return false to print content directly without the layout (e.g. simple prompts).
-     */
-    default boolean usesLayout() {
-        return true;
-    }
-
     default boolean isExit() {
         return false;
     }

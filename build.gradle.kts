@@ -87,12 +87,22 @@ tasks.register("runDev") {
         val os = System.getProperty("os.name").lowercase()
 
         val jvmArgs = if (os.contains("win")) {
-            listOf("-Djline.terminal=jline.AnsiWindowsTerminal", "-Djansi.passthrough=true")
+            listOf(
+                "-Djline.terminal=jline.AnsiWindowsTerminal",
+                "-Djansi.passthrough=true",
+                "-Djdk.httpclient.HttpClient.log=all"
+            )
         } else {
-            listOf("-Djline.terminal=jline.UnixTerminal", "-Djline.internal.Log.debug=false")
+            listOf(
+                "-Djline.terminal=jline.UnixTerminal",
+                "-Djline.internal.Log.debug=false",
+                "-Djdk.httpclient.HttpClient.log=all"
+            )
         }
 
         val command = listOf("java") + jvmArgs + listOf("-cp", classpath, mainClass)
+
+        println(">>> Launching: ${command.joinToString(" ")}")
 
         ProcessBuilder(command)
             .inheritIO()

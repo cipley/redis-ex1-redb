@@ -1,6 +1,7 @@
 package com.cipley.submission.redis.cli.screens;
 
 import com.cipley.submission.redis.cli.SplitLayout;
+import com.cipley.submission.redis.cli.screens.rest.CreateNewDatabaseScreen;
 import com.cipley.submission.redis.config.RedisConfig;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
@@ -12,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
-public class MainMenuScreen implements Screen {
+public class MainMenuScreen extends BaseScreen implements Screen {
     private static final Logger logger = LoggerFactory.getLogger(MainMenuScreen.class);
 
     private final RedisConfig redisConfig;
@@ -31,7 +32,6 @@ public class MainMenuScreen implements Screen {
     @Override
     public void render(SplitLayout layout) {
         var lines = new ArrayList<AttributedString>();
-        lines.add(blank());
         lines.add(title("  Redis - Consultant Engineer Exercise — Main Menu"));
         lines.add(blank());
         lines.add(blank());
@@ -58,10 +58,11 @@ public class MainMenuScreen implements Screen {
             case "2" -> {
                 logger.info("User selected option 2");
                 statusMessage = "Option 2 selected — Redis REST APIs";
+                return new RedisAPIScreen();
             }
             case "3" -> {
                 logger.info("User selected option 3");
-                statusMessage = "Option 3 selected — (placeholder)";
+                statusMessage = "Option 3 selected — Semantic Router";
             }
             case "0", "exit", "quit" -> {
                 connection.close();
@@ -86,34 +87,5 @@ public class MainMenuScreen implements Screen {
     @Override
     public boolean isExit() {
         return exiting;
-    }
-
-    // --- Styling helpers ---
-    private AttributedString title(String text) {
-        return new AttributedStringBuilder()
-                .style(AttributedStyle.BOLD.foreground(AttributedStyle.CYAN))
-                .append(text)
-                .style(AttributedStyle.DEFAULT)
-                .toAttributedString();
-    }
-
-    private AttributedString option(String text) {
-        return new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.GREEN))
-                .append(text)
-                .style(AttributedStyle.DEFAULT)
-                .toAttributedString();
-    }
-
-    private AttributedString status(String text) {
-        return new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW))
-                .append(text)
-                .style(AttributedStyle.DEFAULT)
-                .toAttributedString();
-    }
-
-    private AttributedString blank() {
-        return new AttributedString("");
     }
 }

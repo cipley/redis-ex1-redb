@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
-public class ConnectionScreen implements Screen {
+public class ConnectionScreen extends BaseScreen implements Screen {
     private static final Logger logger = LoggerFactory.getLogger(ConnectionScreen.class);
 
     private final ApplicationConfig applicationConfig;
@@ -29,20 +29,6 @@ public class ConnectionScreen implements Screen {
 
     @Override
     public void render(SplitLayout layout) {
-        if(!isAwaitingPort) {
-            //Print Directly
-            layout.printDirect("\n  Redis - Consultant Engineer Exercise — Connection Setup\n\n");
-            layout.printDirect("  Default host : " + applicationConfig.getRedisHost() + "\n");
-            layout.printDirect("  Default port : " + applicationConfig.getRedisPort() + "\n\n");
-            layout.printDirect("  Current host : " + host +  "\n");
-            layout.printDirect("  Current port : " + port + "\n\n");
-            layout.printDirect("\n  Press ENTER to accept the default value.\n\n");
-            if (!statusMessage.isBlank()) {
-                layout.printDirect("  " + statusMessage + "\n\n");
-            }
-            return;
-        }
-
         var lines = new ArrayList<AttributedString>();
         lines.add(title("  Redis - Consultant Engineer Exercise — Connection Setup"));
         lines.add(blank());
@@ -65,10 +51,11 @@ public class ConnectionScreen implements Screen {
             // Handling host input
             if (!input.isBlank()) {
                 host = input.trim();
+            } else {
+                host = applicationConfig.getRedisHost();
             }
             logger.info("Host set to: {}", host);
             isAwaitingPort = true;
-            return this;    // Stay on this screen
         } else {
             // Handling port input
             if (!input.isBlank()) {
@@ -77,11 +64,14 @@ public class ConnectionScreen implements Screen {
                 } catch (NumberFormatException e) {
                     logger.warn("Invalid port number: {}, keeping default: {}", input.trim(), port);
                 }
+            } else {
+                port = applicationConfig.getRedisPort();
             }
             logger.info("Port set to: {}", port);
             // Try connect
             return tryConnect();
         }
+        return this;    // Stay on this screen
     }
 
     @Override
@@ -91,11 +81,6 @@ public class ConnectionScreen implements Screen {
         } else  {
             return String.format("port [%s]: ", applicationConfig.getRedisPort());
         }
-    }
-
-    @Override
-    public boolean usesLayout() {
-        return isAwaitingPort;
     }
 
     private Screen tryConnect() {
@@ -114,40 +99,5 @@ public class ConnectionScreen implements Screen {
             statusMessage = "Connection failed: " + e.getMessage() + " — please try again.";
             return this;
         }
-    }
-
-    // --- Styling helpers ---
-    private AttributedString title(String text) {
-        return new AttributedStringBuilder()
-                .style(AttributedStyle.BOLD.foreground(AttributedStyle.CYAN))
-                .append(text)
-                .style(AttributedStyle.DEFAULT)
-                .toAttributedString();
-    }
-
-    private AttributedString info(String text) {
-        return new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT)
-                .append(text)
-                .toAttributedString();
-    }
-
-    private AttributedString hint(String text) {
-        return new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.BRIGHT))
-                .append(text)
-                .toAttributedString();
-    }
-
-    private AttributedString error(String text) {
-        return new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.RED))
-                .append(text)
-                .style(AttributedStyle.DEFAULT)
-                .toAttributedString();
-    }
-
-    private AttributedString blank() {
-        return new AttributedString("");
     }
 }
