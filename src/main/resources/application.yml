@@ -9,3 +9,7 @@ rest-api:
   port: 9443
   username: admin@rl.org
   password: FEwNu3a
+
+unified-jedis:
+  host: 192.168.88.243
+  port: 10963

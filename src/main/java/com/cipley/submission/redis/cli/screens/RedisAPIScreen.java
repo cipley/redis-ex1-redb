@@ -40,7 +40,7 @@ public class RedisAPIScreen extends BaseScreen implements Screen {
         lines.add(option("  [3]  List Users"));
         lines.add(option("  [4]  Delete Database"));
         lines.add(blank());
-        lines.add(option("  [0]  Exit"));
+        lines.add(option("  [0]  Back"));
         lines.add(blank());
         if (!statusMessage.isBlank()) {
             lines.add(status("  " + statusMessage));

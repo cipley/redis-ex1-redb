@@ -3,6 +3,7 @@ package com.cipley.submission.redis.cli.screens;
 import com.cipley.submission.redis.cli.SplitLayout;
 import com.cipley.submission.redis.cli.screens.rest.CreateNewDatabaseScreen;
 import com.cipley.submission.redis.config.RedisConfig;
+import com.cipley.submission.redis.config.SemanticRouterConfig;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import org.jline.utils.AttributedString;
@@ -17,13 +18,15 @@ public class MainMenuScreen extends BaseScreen implements Screen {
     private static final Logger logger = LoggerFactory.getLogger(MainMenuScreen.class);
 
     private final RedisConfig redisConfig;
+    private final SemanticRouterConfig semanticRouterConfig;
     private final StatefulRedisConnection<String, String> connection;
     private final RedisCommands<String, String> commands;
     private String statusMessage = "";
     private boolean exiting = false;
 
-    public MainMenuScreen(RedisConfig redisConfig, StatefulRedisConnection<String, String> connection) {
+    public MainMenuScreen(RedisConfig redisConfig, SemanticRouterConfig semanticRouterConfig, StatefulRedisConnection<String, String> connection) {
         this.redisConfig = redisConfig;
+        this.semanticRouterConfig = semanticRouterConfig;
         this.connection = connection;
         this.commands = connection.sync();
         logger.info("Connected to Redis");
@@ -63,6 +66,7 @@ public class MainMenuScreen extends BaseScreen implements Screen {
             case "3" -> {
                 logger.info("User selected option 3");
                 statusMessage = "Option 3 selected — Semantic Router";
+                return new SemanticRouterScreen(semanticRouterConfig);
             }
             case "0", "exit", "quit" -> {
                 connection.close();

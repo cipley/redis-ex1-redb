@@ -16,6 +16,10 @@ public class ApplicationConfig {
     private final String restApiUsername;
     private final String restApiPassword;
 
+    private final String unifiedJedisHost;
+    private final int unifiedJedisPort;
+
+
     public String getRedisHost() {
         return redisHost;
     }
@@ -48,6 +52,14 @@ public class ApplicationConfig {
         return restApiPassword;
     }
 
+    public String getUnifiedJedisHost() {
+        return unifiedJedisHost;
+    }
+
+    public int getUnifiedJedisPort() {
+        return unifiedJedisPort;
+    }
+
     @SuppressWarnings("unchecked")
     public ApplicationConfig() {
         Yaml yaml = new Yaml();
@@ -56,6 +68,7 @@ public class ApplicationConfig {
             var config = (Map<String, Object>) yaml.load(in);
             var redis = (Map<String, Object>) config.get("redis");
             var restApi = (Map<String, Object>) config.get("rest-api");
+            var unifiedJedis = (Map<String, Object>) config.get("unified-jedis");
 
             this.redisHost = (String) redis.getOrDefault("host", "localhost");
             this.redisPort = (int) redis.getOrDefault("port", 6379);
@@ -66,6 +79,9 @@ public class ApplicationConfig {
             this.restApiPort = (int) restApi.getOrDefault("port", 9443);
             this.restApiUsername = (String) restApi.getOrDefault("username", "admin");
             this.restApiPassword = (String) restApi.getOrDefault("password", "");
+
+            this.unifiedJedisHost = (String) unifiedJedis.getOrDefault("host", "localhost");
+            this.unifiedJedisPort = (int) unifiedJedis.getOrDefault("port", 6379);
         } catch (Exception e) {
             throw new RuntimeException("Failed to load application.yml.", e);
         }

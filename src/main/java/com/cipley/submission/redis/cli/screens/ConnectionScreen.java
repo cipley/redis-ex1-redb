@@ -3,6 +3,7 @@ package com.cipley.submission.redis.cli.screens;
 import com.cipley.submission.redis.cli.SplitLayout;
 import com.cipley.submission.redis.config.ApplicationConfig;
 import com.cipley.submission.redis.config.RedisConfig;
+import com.cipley.submission.redis.config.SemanticRouterConfig;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
@@ -86,12 +87,13 @@ public class ConnectionScreen extends BaseScreen implements Screen {
     private Screen tryConnect() {
         logger.info("Attempting to connect to Redis at {}:{}", host, port);
         var redisConfig = new RedisConfig(applicationConfig, host, port);
+        var semanticRouterConfig = new SemanticRouterConfig(applicationConfig);
 
         try {
             var connection = redisConfig.connect();
             var pong = connection.sync().ping();
             logger.info("Redis PING -> {}", pong);
-            return new MainMenuScreen(redisConfig, connection);
+            return new MainMenuScreen(redisConfig, semanticRouterConfig, connection);
         } catch (Exception e) {
             logger.error("Failed to connect to {}:{} — {}", host, port, e.getMessage());
             redisConfig.shutdown();
