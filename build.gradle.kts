@@ -131,7 +131,7 @@ tasks.register<Exec>("jlinkRuntime") {
     commandLine(
         "$javaHome/bin/jlink",
         "--module-path", "$javaHome/jmods",
-        "--add-modules", "java.base,java.logging,java.xml,java.naming,java.net.http",
+        "--add-modules", "java.base,java.logging,java.xml,java.naming,java.net.http,jdk.net,java.management",
         "--output", outputDir.absolutePath,
         "--strip-debug",
         "--compress=2",
