@@ -1,6 +1,6 @@
 redis:
-  host: localhost
-  port: 6379
+  host: redis-11660.re-cluster1.ps-redislabs.org
+  port: 11660
   password: ""
   timeout: 5000
 
@@ -11,5 +11,5 @@ rest-api:
   password: FEwNu3a
 
 unified-jedis:
-  host: 192.168.88.243
-  port: 10963
+  host: redis-12191.re-cluster1.ps-redislabs.org
+  port: 12191
