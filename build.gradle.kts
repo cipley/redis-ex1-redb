@@ -5,6 +5,7 @@ plugins {
     java
     application
     id("io.github.goooler.shadow") version "8.1.8"
+    id("org.graalvm.buildtools.native") version "0.10.2"
 }
 
 group = "com.cipley.submission.redis"
@@ -125,12 +126,14 @@ tasks.named<ShadowJar>("shadowJar") {
 tasks.register<Exec>("jlinkRuntime") {
     dependsOn("shadowJar")
 
-    val javaHome = System.getProperty("java.home")
+    // Point to musl JDK instead of the system JDK
+    val muslJavaHome = System.getProperty("musl.java.home")
+        ?: error("Set -Dmusl.java.home=<path to Alpine JDK>")
     val outputDir = layout.buildDirectory.dir("runtime").get().asFile
 
     commandLine(
-        "$javaHome/bin/jlink",
-        "--module-path", "$javaHome/jmods",
+        "$muslJavaHome/bin/jlink",
+        "--module-path", "$muslJavaHome/jmods",
         "--add-modules", "java.base,java.logging,java.xml,java.naming,java.net.http,jdk.net,java.management",
         "--output", outputDir.absolutePath,
         "--strip-debug",
