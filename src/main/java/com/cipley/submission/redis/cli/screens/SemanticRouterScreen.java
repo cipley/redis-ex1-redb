@@ -27,7 +27,7 @@ public class SemanticRouterScreen extends BaseScreen implements Screen {
         this.router = SemanticRouter.builder()
                 .name("topic-redis-exercise")
                 .vectorizer(vectorizer)
-                .routes(Routes.routes)
+                .routes(Routes.SEMANTIC_ROUTES)
                 .jedis(jedis)
                 .overwrite(false)
                 .build();

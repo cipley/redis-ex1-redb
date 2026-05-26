@@ -127,8 +127,9 @@ tasks.register<Exec>("jlinkRuntime") {
     dependsOn("shadowJar")
 
     // Point to musl JDK instead of the system JDK
-    val muslJavaHome = System.getProperty("musl.java.home")
-        ?: error("Set -Dmusl.java.home=<path to Alpine JDK>")
+    val muslJavaHome = System.getProperty("glibc.java.home")
+        ?: System.getenv("JAVA_HOME")
+        ?: error("Set -Dglibc.java.home=<path to glibc JDK>")
     val outputDir = layout.buildDirectory.dir("runtime").get().asFile
 
     commandLine(
@@ -153,29 +154,111 @@ tasks.register("distPortable") {
         distDir.deleteRecursively()
         distDir.mkdirs()
 
-        // Copy bundled JRE
+        // 1. Runtime + jar
         runtimeDir.copyRecursively(File(distDir, "runtime"))
-
-        // Copy fat jar
         jar.copyTo(File(distDir, "redis-ex1-redb.jar"))
 
-        // Create launcher script (Linux/macOS)
+        // 2. Glibc libs
+        val glibcDir = File(distDir, "glibc")
+        glibcDir.mkdirs()
+        listOf(
+            "/lib64/ld-linux-x86-64.so.2",
+            "/usr/lib/libc.so.6",
+            "/usr/lib/libm.so.6",
+            "/usr/lib/libdl.so.2",
+            "/usr/lib/libpthread.so.0",
+            "/usr/lib/librt.so.1",
+            "/usr/lib/libresolv.so.2",
+            "/usr/lib/libstdc++.so.6",
+            "/usr/lib/libgcc_s.so.1",
+            "/usr/lib/libz.so.1",
+            "/usr/lib/libnss_dns.so.2",
+            "/usr/lib/libnss_files.so.2",
+            "/usr/lib/libutil.so.1",
+            "/usr/lib/libcrypt.so.1",
+            "/usr/lib/libatomic.so.1"
+        ).forEach { path ->
+            val src = File(path)
+            if (src.exists()) {
+                src.copyTo(File(glibcDir, src.name), overwrite = true)
+            } else {
+                println("  (skip, not present on host): $path")
+            }
+        }
+
+        // 3. Make everything in glibc dir executable
+        exec {
+            commandLine("chmod", "-R", "755", glibcDir.absolutePath)
+        }
+
+        // 4. Patch runtime/bin/* — set interpreter and rpath (belt-and-suspenders;
+        //    the launcher uses the loader explicitly, but this helps tools that
+        //    might exec these binaries directly)
+        File(distDir, "runtime/bin").listFiles()?.filter { it.isFile && isElf(it) }?.forEach { bin ->
+            exec {
+                commandLine("patchelf",
+                    "--set-interpreter", "\$ORIGIN/../../glibc/ld-linux-x86-64.so.2",
+                    "--set-rpath", "\$ORIGIN/../../glibc:\$ORIGIN/../lib:\$ORIGIN/../lib/server",
+                    bin.absolutePath)
+            }
+            println("  patched: ${bin.relativeTo(distDir)}")
+        }
+
+        // 5. Patch runtime/lib/**.so — rpath only
+        File(distDir, "runtime/lib").walkTopDown()
+            .filter { it.isFile && it.name.endsWith(".so") }
+            .forEach { so ->
+                val depth = so.relativeTo(distDir).toPath().nameCount - 1
+                val up = (1..depth).joinToString("/") { ".." }
+                exec {
+                    commandLine("patchelf",
+                        "--set-rpath", "\$ORIGIN/$up/glibc:\$ORIGIN",
+                        so.absolutePath)
+                }
+            }
+
+        // 6. Pre-extract ONNX + tokenizers native libs and patch their rpaths
+        val nativeDir = File(distDir, "native")
+        nativeDir.mkdirs()
+        copy {
+            from(zipTree(jar)) {
+                include("ai/onnxruntime/native/linux-x64/**")
+                include("native/lib/linux-x86_64/**")
+                eachFile { relativePath = RelativePath(true, file.name) }
+                includeEmptyDirs = false
+            }
+            into(nativeDir)
+        }
+        nativeDir.listFiles()?.filter { it.name.endsWith(".so") }?.forEach { so ->
+            exec {
+                commandLine("patchelf",
+                    "--set-rpath", "\$ORIGIN/../glibc:\$ORIGIN",
+                    so.absolutePath)
+            }
+            println("  patched native: ${so.name}")
+        }
+
+        // 7. Launcher script — invokes loader explicitly, bypassing INTERP/$ORIGIN
         val launcher = File(distDir, "run.sh")
-        launcher.writeText("""
-            #!/bin/sh
-            DIR=${'$'}(cd "${'$'}(dirname "${'$'}0")" && pwd)
-            "${'$'}DIR/runtime/bin/java" -jar "${'$'}DIR/redis-ex1-redb.jar"
+        launcher.writeText(""" 
+            #!/bin/sh 
+            DIR=${'$'}(cd "${'$'}(dirname "${'$'}0")" && pwd) 
+            exec "${'$'}DIR/glibc/ld-linux-x86-64.so.2" --library-path "${'$'}DIR/glibc:${'$'}DIR/runtime/lib:${'$'}DIR/runtime/lib/server" "${'$'}DIR/runtime/bin/java" -jar "${'$'}DIR/redis-ex1-redb.jar" 
         """.trimIndent())
         launcher.setExecutable(true)
 
-        // Create launcher script (Windows)
-        File(distDir, "run.bat").writeText("""
-            @echo off
-            set DIR=%~dp0
-            "%DIR%runtime\bin\java" -jar "%DIR%redis-ex1-redb.jar"
-        """.trimIndent())
-
         println("Portable distribution created at: ${distDir.absolutePath}")
+    }
+}
+
+// Helper: quick ELF magic check
+fun isElf(file: File): Boolean {
+    if (!file.isFile || file.length() < 4) return false
+    return file.inputStream().use { stream ->
+        val magic = ByteArray(4)
+        stream.read(magic)
+        magic[0] == 0x7F.toByte() && magic[1] == 'E'.code.toByte() &&
+                magic[2] == 'L'.code.toByte() && magic[3] == 'F'.code.toByte()
     }
 }
 

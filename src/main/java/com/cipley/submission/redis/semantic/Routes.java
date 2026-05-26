@@ -6,7 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 public class Routes {
-    public static final List<Route> routes = List.of(
+    private Routes() {
+    }
+
+    public static final List<Route> SEMANTIC_ROUTES = List.of(
             Route.builder()
                     .name("Gen AI Programming Topics")
                     .references(List.of(
