@@ -9,9 +9,7 @@ public class SemanticRouterConfig {
     public SemanticRouterConfig(ApplicationConfig config) {
         this.jedis = RedisClient.create(
                 config.getUnifiedJedisHost(),
-                config.getUnifiedJedisPort(),
-                config.getUnifiedJedisUsername(),
-                config.getUnifiedJedisPassword()
+                config.getUnifiedJedisPort()
         );
     }
 
