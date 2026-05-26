@@ -85,7 +85,7 @@ public class ApplicationConfig {
         InputStream in = null;
         File external = new File("application.yml");
         try {
-            if (!external.exists()) {
+            if (external.exists()) {
                 in = new FileInputStream(external);
             } else {
                 in = getClass().getClassLoader().getResourceAsStream("application.yml");
