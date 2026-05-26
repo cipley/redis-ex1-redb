@@ -78,9 +78,9 @@ public class REDBScreen extends BaseScreen implements Screen {
     private String readValues() {
         try {
             // get all keys first
-            var keys = commands.keys("*");
+            var keys = commands.keys("exercise:*");
             if (keys.isEmpty()) {
-                return "Redis Database is empty";
+                return "Redis Database doesn't contain exercise items.";
             }
             // use MGET
             var keyArray = keys.toArray(new String[0]);
@@ -103,8 +103,8 @@ public class REDBScreen extends BaseScreen implements Screen {
         try {
             var kv = IntStream.rangeClosed(1, 100)
                     .boxed()
-                    .collect(Collectors.toMap(
-                            String::valueOf,    // key
+                    .collect(Collectors.toMap(integer ->
+                            String.join(":", "exercise", String.valueOf(integer)),    // key
                             String::valueOf     // value
                     ));
             commands.mset(kv);
@@ -120,8 +120,11 @@ public class REDBScreen extends BaseScreen implements Screen {
      */
     private String clearDatabase() {
         try {
-            commands.flushdb();
-            return "Success clearing Redis.";
+            //Collect keys
+            var keys = commands.keys("exercise:*")
+                    .toArray(new String[0]);
+            commands.unlink(keys);
+            return "Success clearing Redis for exercise values.";
         }  catch (Exception e) {
             logger.error("Failed to clear Redis!", e);
             return "Failed to clear Redis!";
