@@ -91,6 +91,7 @@ public class REDBScreen extends BaseScreen implements Screen {
                     .sorted(Comparator.comparingInt((String s) -> Integer.parseInt(s)).reversed())
                     .collect(Collectors.joining("; "));
         } catch (Exception e) {
+            logger.error("Failed reading values from Redis!", e);
             return "Failed reading values from Redis!";
         }
     }
@@ -109,6 +110,7 @@ public class REDBScreen extends BaseScreen implements Screen {
             commands.mset(kv);
             return "Success inserting values to Redis.";
         } catch (Exception e) {
+            logger.error("Failed to insert values to Redis!", e);
             return "Failed to insert values to Redis!";
         }
     }
@@ -121,6 +123,7 @@ public class REDBScreen extends BaseScreen implements Screen {
             commands.flushdb();
             return "Success clearing Redis.";
         }  catch (Exception e) {
+            logger.error("Failed to clear Redis!", e);
             return "Failed to clear Redis!";
         }
     }

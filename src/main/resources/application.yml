@@ -1,8 +1,8 @@
 redis:
   host: redis-11660.re-cluster1.ps-redislabs.org
   port: 11660
-  username: "admin@rl.org"
-  password: "FEwNu3a"
+  username: ""
+  password: ""
   timeout: 5000
 
 rest-api:
@@ -14,5 +14,5 @@ rest-api:
 unified-jedis:
   host: redis-12191.re-cluster1.ps-redislabs.org
   port: 12191
-  username: "admin@rl.org"
-  password: "FEwNu3a"
+  username: ""
+  password: ""
