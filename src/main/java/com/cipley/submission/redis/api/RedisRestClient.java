@@ -6,6 +6,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
@@ -50,7 +51,15 @@ public class RedisRestClient {
 
         this.httpClient = HttpClient.newBuilder()
                 .sslContext(sslContext)
+                .sslParameters(getDisabledSSLParameters())
                 .build();
+    }
+
+    private SSLParameters getDisabledSSLParameters() {
+        SSLParameters params = new SSLParameters();
+        params.setEndpointIdentificationAlgorithm("");  // disables hostname verification
+        params.setProtocols(new String[]{"TLSv1.2", "TLSv1.3"});
+        return params;
     }
 
     public JsonNode get(String path) throws Exception {
