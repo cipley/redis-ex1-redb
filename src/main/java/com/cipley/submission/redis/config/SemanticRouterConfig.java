@@ -7,7 +7,12 @@ public class SemanticRouterConfig {
     private final UnifiedJedis jedis;
 
     public SemanticRouterConfig(ApplicationConfig config) {
-        this.jedis = RedisClient.create(config.getUnifiedJedisHost(), config.getUnifiedJedisPort());
+        this.jedis = RedisClient.create(
+                config.getUnifiedJedisHost(),
+                config.getUnifiedJedisPort(),
+                config.getUnifiedJedisUsername(),
+                config.getUnifiedJedisPassword()
+        );
     }
 
     public UnifiedJedis getUnifiedJedis() {

@@ -19,8 +19,11 @@ public class RedisConfig {
                 .withPort(port)
                 .withTimeout(Duration.ofMillis(applicationConfig.getRedisTimeout()));
 
-        if (applicationConfig.getRedisPassword().isBlank()) {
-            uriBuilder.withPassword(applicationConfig.getRedisPassword().toCharArray());
+        String username = applicationConfig.getRedisUsername();
+        String password = applicationConfig.getRedisPassword();
+
+        if (!username.isBlank() || !password.isBlank()) {
+            uriBuilder.withAuthentication(username, password);
         }
 
         this.redisClient = RedisClient.create(uriBuilder.build());
